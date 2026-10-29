@@ -391,6 +391,19 @@ function applyDefaults(d) {
 function renderSettings() {
   $('tlAuto').classList.toggle('hidden', !S.touched.treeline);
   ['treeline', 'snow', 'valley', 'slope', 'trees'].forEach(showNum);
+  renderSnowHint();
+}
+function renderSnowHint() {
+  /* the biome's reference snowfall (the game's AverageAnnualSnowfallInches) times the multiplier: a rough guide, the
+     game also varies snowfall with elevation, temperature and each season's weather */
+  const b = (S.biomes || []).find((x) => x.id === $('biome').value);
+  if (!b || !b.inches) { $('snowHint').textContent = ''; return; }
+  const inch = b.inches * +$('snow').value, cm = inch * 2.54;
+  const fmt = (v, u) => Math.round(v).toLocaleString('en-US') + ' ' + u;
+  const est = S.units === 'ft' ? `${fmt(inch, 'in')} (${fmt(cm, 'cm')})` : `${fmt(cm, 'cm')} (${fmt(inch, 'in')})`;
+  const avg = S.units === 'ft' ? fmt(b.inches, 'in') : fmt(b.inches * 2.54, 'cm');
+  $('snowHint').textContent = `About ${est} a season (estimate from the biome's ${avg} average)`;
+  $('snowHint').title = 'Rough guide: the game also varies snowfall with elevation, temperature and each season\'s weather.';
 }
 
 /* The value next to each slider is a box you can type into: Enter (or clicking away) applies it, Esc undoes.
@@ -670,7 +683,7 @@ document.querySelectorAll('[data-layer]').forEach((b) => {
 });
 document.querySelectorAll('[data-link]').forEach((b) => { b.onclick = () => call('link', b.dataset.link); });
 function renderUnits() {
-  $('unitsBtn').textContent = S.units === 'ft' ? 'Units: feet' : 'Units: metres';
+  document.querySelectorAll('[data-units]').forEach((b) => b.classList.toggle('on', b.dataset.units === S.units));
   drawSquare(); renderSettings();
   if (S.preview) showStatsOnly();
   renderMaps();
@@ -680,7 +693,9 @@ function showStatsOnly() {
   $('stats').innerHTML = [['Peak', fmtElev(p.peak_m)], ['Base', fmtElev(p.base_m)], ['Vertical', fmtElev(p.relief_m)],
     ['Avg slope', Math.round(p.mean_slope) + '°']].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
 }
-$('unitsBtn').onclick = () => { S.units = S.units === 'ft' ? 'm' : 'ft'; call('set_setting', 'units', S.units); renderUnits(); };
+document.querySelectorAll('[data-units]').forEach((b) => {
+  b.onclick = () => { S.units = b.dataset.units; call('set_setting', 'units', S.units); renderUnits(); };
+});
 $('gamePill').onclick = () => {
   const g = S.game;
   if (!g || !g.found) return locateGame();
@@ -720,6 +735,7 @@ async function start() {
   S.units = st.units === 'm' ? 'm' : 'ft';
   layers.topo = tileLayer('topo', 17);
   layers.osm = tileLayer('osm', 19);
+  layers.sat = tileLayer('sat', 18);
   setLayer(st.layer || 'topo');
   const v = st.view;
   if (v && isFinite(v.lat) && isFinite(v.lon)) {

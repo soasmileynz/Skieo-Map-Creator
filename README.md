@@ -31,10 +31,10 @@ built or uploaded by hand. Three ways to check one:
    It opens the exe and checks every bundled file byte for byte and every app module as compiled code against the
    source, and lists everything else inside (Python and the libraries in `requirements.txt`).
 
-What the app connects to: map tiles (OpenStreetMap, OpenTopoMap), place search (Photon, Nominatim) and elevation
-data (USGS 3DEP, AWS Terrain Tiles). retoc downloads the Oodle compression library on first use. No accounts, no
-telemetry. It writes to `%LOCALAPPDATA%\SkiEO Map Creator` and the game's `Content\Paks\~mods` folder, never to
-saves.
+What the app connects to: map tiles (OpenStreetMap, OpenTopoMap, Esri World Imagery), place search (Photon,
+Nominatim) and elevation data (USGS 3DEP, AWS Terrain Tiles). retoc downloads the Oodle compression library on first
+use. No accounts, no telemetry. It writes to `%LOCALAPPDATA%\SkiEO Map Creator` and the game's `Content\Paks\~mods`
+folder, never to saves.
 
 ## How it works
 
@@ -57,6 +57,19 @@ saves.
 
 The window is a local web UI (`web/`: Leaflet map, three.js 3D preview) shown by pywebview / WebView2. `server.py`
 serves it on 127.0.0.1, with a token-protected tile proxy on its own port.
+
+## Map styles and units
+
+- **Topo**, **Streets** and **Satellite** map styles. Topo and Satellite can also cover the terrain in the 3D view.
+  Satellite uses Esri World Imagery tiles, credited in the app. Esri has no open tile usage policy like
+  OpenStreetMap's and its terms favour ArcGIS accounts, so if that matters for your use, change the source in
+  `LAYERS` in `server.py`.
+- The **ft | m** switch in the "Choose the area" header sets the units for heights, distances and snowfall.
+
+## Snowfall estimate
+
+Under the Snowfall slider the app shows about how much snow a season brings: the biome's average annual snowfall
+times the multiplier. It is a rough guide, as real seasons vary with elevation and weather.
 
 ## Run from source
 

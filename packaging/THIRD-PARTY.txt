@@ -23,6 +23,8 @@ Map and elevation data (downloaded while you use the app)
 ---------------------------------------------------------
 * Map data (c) OpenStreetMap contributors, ODbL -- https://www.openstreetmap.org/copyright
 * Map style (c) OpenTopoMap, CC-BY-SA -- https://opentopomap.org
+* Satellite imagery: Esri World Imagery (Esri, Maxar, Earthstar Geographics and the GIS User Community)
+  -- https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9
 * Place search: Photon by komoot (OpenStreetMap data) and Nominatim (OpenStreetMap Foundation)
 * Elevation inside the USA: USGS 3D Elevation Program (public domain)
 * Elevation elsewhere: Terrain Tiles on AWS Open Data (Mapzen; sources include SRTM, GMTED2010, ETOPO1, 3DEP and others)

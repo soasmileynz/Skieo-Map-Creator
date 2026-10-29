@@ -2,6 +2,11 @@
 
 Maps made with an older version show **Rebuild recommended** in My Maps: one click on Rebuild gives them the fixes.
 
+## Unreleased
+- New **Satellite** map style (Esri World Imagery), on the map and in the 3D view.
+- A **ft | m** switch next to "Choose the area" replaces the Units link at the bottom.
+- Snowfall shows about how much snow a season brings, from the biome's average annual snowfall.
+
 ## v1.1.10
 - Number boxes accept European decimals: `0,93` works like `0.93`, and `3.500 m` counts as thousands.
 

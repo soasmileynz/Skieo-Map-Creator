@@ -1,6 +1,6 @@
 /* Full-window 3D view of the loaded terrain: rotate (left drag), move (right drag), zoom (wheel).
    Heights (uint16, every 2nd landscape vertex) and the colour texture come from the app (api.view3d, served as
-   /blob/...); the topo-map texture is stitched here from the same map tiles the main map uses (their own local port).
+   /blob/...); the topo-map and satellite textures are stitched here from the same map tiles the main map uses (their own local port).
    Close / Esc work at any time, also while loading: every load checks `gen` and is dropped once the view was closed. */
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/three/OrbitControls.js';
@@ -12,6 +12,7 @@ let renderer = null;   // one WebGL context for the app's lifetime (browsers cap
 let gen = 0;           // bumped by every open / close
 const LOAD_MS = 90000;
 const TOPO_MS = 180000;
+const MAP_NAMES = { topo: 'topo map', sat: 'satellite imagery' };   // surfaces stitched from map tiles
 
 function q(s) { return encodeURIComponent(s); }
 
@@ -136,8 +137,8 @@ function setExaggeration(exag) {
   R.exag = exag;
 }
 
-async function topoTexture(bbox, opts, onProgress) {
-  /* stitch OpenTopoMap tiles over the square (lat/lon box; mercator is ~linear over a few km).
+async function mapTexture(layer, bbox, opts, onProgress) {
+  /* stitch map tiles (topo or satellite) over the square (lat/lon box; mercator is ~linear over a few km).
      -> { tex, missing, total }; tex is null when no tile could be loaded (offline) */
   const lon2x = (lon, z) => (lon + 180) / 360 * 256 * 2 ** z;
   const lat2y = (lat, z) => { const s = Math.sin(lat * Math.PI / 180); return (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * 256 * 2 ** z; };
@@ -162,7 +163,7 @@ async function topoTexture(bbox, opts, onProgress) {
           onProgress(++done, total); res();
         };
         im.onerror = () => { onProgress(++done, total); res(); };
-        im.src = `${opts.tiles || ''}/tile/topo/${z}/${tx}/${ty}.png?t=${q(opts.token)}`;
+        im.src = `${opts.tiles || ''}/tile/${layer}/${z}/${tx}/${ty}.png?t=${q(opts.token)}`;
       }));
     }
   }
@@ -262,7 +263,7 @@ export async function open(opts) {
     const camera = new THREE.PerspectiveCamera(42, 1, s / 2000, s * 8);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    R = { renderer, scene, camera, data: res, heights, tex: { terrain: tex, topo: null }, exag: opts.exag || 1.5 };
+    R = { renderer, scene, camera, data: res, heights, tex: { terrain: tex, topo: null, sat: null }, exag: opts.exag || 1.5 };
     const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, metalness: 0 });
     R.mesh = new THREE.Mesh(buildTerrain(res, heights, R.exag), mat);
     R.mesh.castShadow = R.mesh.receiveShadow = true;
@@ -341,22 +342,22 @@ $('v3dExag').oninput = () => {
 };
 document.querySelectorAll('[data-tex]').forEach((b) => {
   b.onclick = async () => {
-    if (!R || R.topoLoading) return;
-    const want = b.dataset.tex, my = gen;
-    if (want === 'topo' && !R.tex.topo) {
-      R.topoLoading = true;
-      setStatus('Loading the topo map...');
+    if (!R || R.mapLoading) return;
+    const want = b.dataset.tex, my = gen, what = MAP_NAMES[want];
+    if (what && !R.tex[want]) {
+      R.mapLoading = true;
+      setStatus(`Loading the ${what}...`);
       let got;
       try {
-        got = await topoTexture(R.data.bbox, R.opts, (k, n) => { if (my === gen) setStatus(`Loading the topo map (${k} of ${n})...`); });
+        got = await mapTexture(want, R.data.bbox, R.opts, (k, n) => { if (my === gen) setStatus(`Loading the ${what} (${k} of ${n})...`); });
       } catch (e) {
         got = { tex: null };
       }
       if (my !== gen) { if (got.tex) got.tex.dispose(); return; }
-      R.topoLoading = false;
-      if (!got.tex) return setStatus('The topo map could not be loaded. Check the internet connection and try again.', 'note');
-      R.tex.topo = got.tex;
-      setStatus(got.missing ? 'Part of the topo map could not be loaded (no connection?).' : '', 'note');
+      R.mapLoading = false;
+      if (!got.tex) return setStatus(`The ${what} could not be loaded. Check the internet connection and try again.`, 'note');
+      R.tex[want] = got.tex;
+      setStatus(got.missing ? `Part of the ${what} could not be loaded (no connection?).` : '', 'note');
     }
     if (!R) return;
     R.mesh.material.map = R.tex[want];

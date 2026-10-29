@@ -26,6 +26,7 @@ GAME_URL = 'steam://rungameid/5012760'
 LINKS = {
     'osm': 'https://www.openstreetmap.org/copyright',
     'otm': 'https://opentopomap.org/about',
+    'esri': 'https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9',
     'nominatim': 'https://nominatim.org/',
     'photon': 'https://photon.komoot.io/',
     'usgs': 'https://www.usgs.gov/3d-elevation-program',

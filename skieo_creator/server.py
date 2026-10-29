@@ -20,7 +20,10 @@ log = logging.getLogger(__name__)
 LAYERS = {
     'osm': dict(url='https://tile.openstreetmap.org/{z}/{x}/{y}.png', max_zoom=19),
     'topo': dict(url='https://tile.opentopomap.org/{z}/{x}/{y}.png', max_zoom=17),
+    'sat': dict(url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                max_zoom=18, ext='jpg'),
 }
+TILE_TYPES = {'png': (b'\x89PNG\r\n\x1a\n', 'image/png'), 'jpg': (b'\xff\xd8\xff', 'image/jpeg')}   # ext -> (magic, type)
 TILE_DAYS = 14
 TILE_CACHE_MB = 400
 TOKEN = secrets.token_urlsafe(24)
@@ -61,13 +64,14 @@ def tile(layer, z, x, y):
     spec = LAYERS[layer]
     if not (0 <= z <= spec['max_zoom'] and 0 <= x < 2 ** z and 0 <= y < 2 ** z):
         return None
-    f = paths.TILES / layer / str(z) / str(x) / ('%d.png' % y)
+    ext = spec.get('ext', 'png')
+    f = paths.TILES / layer / str(z) / str(x) / ('%d.%s' % (y, ext))
     if f.is_file() and time.time() - f.stat().st_mtime < TILE_DAYS * 86400:
         return f.read_bytes()
     stale = f.read_bytes() if f.is_file() else None      # stale beats nothing when offline
     try:
         _OfflineGate(layer).check()
-        data = net.get(spec['url'].format(z=z, x=x, y=y), timeout=20, retries=1, per_host=2, accept='image/png',
+        data = net.get(spec['url'].format(z=z, x=x, y=y), timeout=20, retries=1, per_host=2, accept=TILE_TYPES[ext][1],
                        cancel=_OfflineGate(layer))
     except net.Cancelled:
         return stale
@@ -82,7 +86,7 @@ def tile(layer, z, x, y):
                 _offline[layer] = time.monotonic()
         return stale
     _fails[layer] = 0
-    if data[:8] == b'\x89PNG\r\n\x1a\n':
+    if data.startswith(TILE_TYPES[ext][0]):
         paths.atomic_write(f, data)
     return data
 
@@ -90,7 +94,9 @@ def tile(layer, z, x, y):
 def prune_tiles():
     files = []
     total = 0
-    for f in paths.TILES.rglob('*.png'):
+    for f in paths.TILES.rglob('*'):
+        if f.suffix[1:] not in TILE_TYPES:
+            continue
         st = f.stat()
         files.append((st.st_mtime, st.st_size, f))
         total += st.st_size
@@ -149,7 +155,7 @@ class Handler(BaseHTTPRequestHandler):
             data = tile(parts[1], z, x, y)
             if data is None:
                 return self._send(200, EMPTY_PNG, 'image/png', 'no-store')
-            return self._send(200, data, 'image/png', 'max-age=86400')
+            return self._send(200, data, TILE_TYPES[LAYERS[parts[1]].get('ext', 'png')][1], 'max-age=86400')
         rel = '/'.join(p for p in parts if p not in ('', '.', '..')) or 'index.html'
         f = paths.resource('web', *rel.split('/'))
         web = paths.resource('web').resolve()

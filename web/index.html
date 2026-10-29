@@ -22,6 +22,7 @@
     <div class="hud-group" role="group" aria-label="Map style">
       <button class="hud-btn" data-layer="topo" title="Topographic map with contour lines">Topo</button>
       <button class="hud-btn" data-layer="osm" title="OpenStreetMap standard map">Streets</button>
+      <button class="hud-btn" data-layer="sat" title="Satellite and aerial imagery">Satellite</button>
     </div>
     <button class="hud-btn solo" id="overlayBtn" title="Show the loaded terrain on the map" disabled>Terrain overlay</button>
   </div>
@@ -59,7 +60,8 @@
           </div>
 
           <div class="sect" id="cardArea">
-            <div class="sect-h"><span class="num">1</span><h2>Choose the area</h2></div>
+            <div class="sect-h"><span class="num">1</span><h2>Choose the area</h2>
+              <div class="units" role="group" aria-label="Units"><button data-units="ft" title="Show heights in feet, distances in miles">ft</button><button data-units="m" title="Show heights in metres, distances in km">m</button></div></div>
             <p class="note">Fit the mountain inside the square: the summit, and some flat ground at the bottom for the base lodge.</p>
             <div class="row-label"><label for="size">Area size</label><span class="numval"><input class="num-in" id="sizeOut" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Area size in km" title="Type a value, then press Enter"><span class="num-unit" id="sizeUnit"></span></span></div>
             <input type="range" id="size" min="3" max="12" step="0.1" value="8">
@@ -86,6 +88,7 @@
             <input type="range" id="treeline" min="0" max="4500" step="any">
             <div class="row-label"><label for="snow">Snowfall</label><span class="numval"><input class="num-in" id="snowOut" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Snowfall multiplier" title="Type a value, then press Enter"><span class="num-unit" id="snowUnit"></span></span></div>
             <input type="range" id="snow" min="0.2" max="2.5" step="0.01" value="1">
+            <div class="meta" id="snowHint"></div>
             <div class="row-label"><label for="slope">Trees up to</label><span class="numval"><input class="num-in" id="slopeOut" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Steepest slope with trees" title="Type a value, then press Enter"><span class="num-unit" id="slopeUnit"></span></span></div>
             <input type="range" id="slope" min="20" max="55" step="1" value="33">
             <div class="meta">The steepest ground that still gets trees. The game shows bare rock from about 33°.</div>
@@ -128,13 +131,13 @@
 
         <footer>
           <div class="foot-links">
-            <button class="link" id="unitsBtn"></button>
             <button class="link" id="repairBtn" title="Rebuild the game's map list from the installed maps">Repair map list</button>
             <button class="link" id="diagBtn" title="Copy the app log to the clipboard, to share when asking for help">Copy diagnostics</button>
             <span class="ver" id="ver"></span>
           </div>
           <div class="attrib">Map data &copy; <button class="link" data-link="osm">OpenStreetMap</button> contributors,
-            style <button class="link" data-link="otm">OpenTopoMap</button> (CC-BY-SA) &middot; Search
+            style <button class="link" data-link="otm">OpenTopoMap</button> (CC-BY-SA) &middot; Imagery
+            <button class="link" data-link="esri">Esri</button>, Maxar, Earthstar Geographics &middot; Search
             <button class="link" data-link="photon">Photon</button>, <button class="link" data-link="nominatim">Nominatim</button> &middot; Elevation <button class="link" data-link="usgs">USGS 3DEP</button>,
             <button class="link" data-link="terrain">Terrain Tiles</button> &middot; <button class="link" data-link="leaflet">Leaflet</button></div>
         </footer>
@@ -150,6 +153,7 @@
     <div class="hud-group" role="group" aria-label="Surface">
       <button class="hud-btn" data-tex="terrain" title="Forest, rock and snow from the elevation">Terrain</button>
       <button class="hud-btn" data-tex="topo" title="Drape the topo map over the terrain">Topo map</button>
+      <button class="hud-btn" data-tex="sat" title="Drape the satellite imagery over the terrain">Satellite</button>
     </div>
     <label class="hud-pill v3d-exag">Height <input type="range" id="v3dExag" min="1" max="3" step="0.1" value="1.5"><output id="v3dExagOut"></output></label>
     <button class="hud-btn solo" id="v3dReset">Reset view</button>

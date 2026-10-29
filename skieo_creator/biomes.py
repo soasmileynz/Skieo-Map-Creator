@@ -66,6 +66,15 @@ BIOMES = {
 }
 
 
+# AverageAnnualSnowfallInches of each DA_BiomeSettings_*: the game's reference snowfall for the biome, which the page
+# scales by the snowfall multiplier for a rough per-season estimate
+SNOWFALL_IN = {
+    'Alps': 280, 'Andes': 288, 'AustralianAlps': 80, 'CanadianRockies': 180, 'Changbai': 70, 'CoastMountains': 460,
+    'HawaiiAlpine': 40, 'Hokkaido': 590, 'Northeast': 182, 'Patagonia': 118, 'PNW': 388, 'Rockies': 274, 'Scandes': 160,
+    'SouthernAlpsNZ': 150, 'Taebaek': 100, 'Tahoe': 275, 'Utah': 350,
+}
+
+
 def nearest(lat, lon):
     """(stock resort name, biome, distance km) closest to the point"""
     best = min(STOCK, key=lambda s: geo.haversine_km(lat, lon, s[1], s[2]))
@@ -85,4 +94,4 @@ def defaults(lat, lon):
 
 
 def listing():
-    return [dict(id=k, label=v['label'], snow=v['snow']) for k, v in sorted(BIOMES.items(), key=lambda kv: kv[1]['label'])]
+    return [dict(id=k, label=v['label'], snow=v['snow'], inches=SNOWFALL_IN.get(k)) for k, v in sorted(BIOMES.items(), key=lambda kv: kv[1]['label'])]

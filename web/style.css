@@ -118,6 +118,11 @@ svg { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round
 .chip { background: var(--tag-bg); color: var(--tag-ink); border-radius: 4px; padding: 1px 8px; font-size: 11.5px;
   text-transform: uppercase; letter-spacing: .5px; }
 .chip:empty { display: none; }
+.units { display: flex; border: 2px solid var(--slate-edge); border-radius: 4px; overflow: hidden; flex: none; }
+.units button { background: var(--slate); color: var(--row-sub); border: 0; padding: 2px 11px; font-size: 13px; cursor: pointer; }
+.units button + button { border-left: 2px solid var(--slate-edge); }
+.units button:hover { color: #fff; }
+.units button.on { background: var(--steel); color: #fff; }
 .note { color: var(--ink-soft); margin: 0 0 8px; font-size: 13.5px; }
 .meta { color: var(--ink-faint); font-size: 12.5px; margin: 1px 0 8px; font-variant-numeric: tabular-nums; }
 .row-label { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; color: var(--ink); }
